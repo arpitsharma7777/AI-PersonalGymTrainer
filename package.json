@@ -11,7 +11,7 @@
     ]
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
     "build:server": "vite build --config vite.config.server.ts",
@@ -21,6 +21,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "0.10.22-rc.20250304",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "zod": "^3.25.76",

@@ -1,5 +1,4 @@
-/** @import must precede all other statements */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@500;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -7,52 +6,58 @@
 
 @layer base {
   /**
-   * Hackfinity Dark Cyber/Tech Theme
-   * Black background with Neon Green/Blue accents
-   * tailwind.config.ts expects HSL values
-  */
+   * Material 3 + Modern Gym Theme
+   * Deep Black background with Neon Green accents
+   */
   :root {
-    /* Dark background */
-    --background: 0 0% 8%;
+    /* Pure Black Background */
+    --background: 0 0% 0%;
     --foreground: 0 0% 95%;
 
-    --card: 0 0% 12%;
+    /* Material Surface Tones (Neutral Variant) */
+    /* Surface 1 (Card default) */
+    --card: 0 0% 12%; 
     --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 12%;
+    /* Surface 2 (Popover / Elevated) */
+    --popover: 0 0% 15%;
     --popover-foreground: 0 0% 95%;
 
-    /* Neon Green primary */
-    --primary: 120 100% 50%;
-    --primary-foreground: 0 0% 8%;
+    /* Surface Container (Higher elevation) */
+    --surface-container: 0 0% 20%;
 
-    /* Neon Blue secondary */
-    --secondary: 200 100% 50%;
-    --secondary-foreground: 0 0% 8%;
+    /* Neon Green Primary */
+    --primary: 136 78% 57%; /* #17E777 approx */
+    --primary-foreground: 0 0% 0%;
 
-    --muted: 0 0% 30%;
+    /* Neon Blue Secondary */
+    --secondary: 190 90% 50%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 0 0% 20%;
     --muted-foreground: 0 0% 70%;
 
-    --accent: 120 100% 50%;
-    --accent-foreground: 0 0% 8%;
+    --accent: 136 78% 57%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 100% 45%;
+    --destructive: 0 100% 50%;
     --destructive-foreground: 0 0% 95%;
 
-    --border: 0 0% 25%;
+    --border: 0 0% 20%;
     --input: 0 0% 15%;
-    --ring: 120 100% 50%;
+    --ring: 136 78% 57%;
 
-    --radius: 0.5rem;
+    --radius: 1.5rem; /* Larger radius for Material 3 */
 
-    --sidebar-background: 0 0% 10%;
+    /* Chart/Sidebar - keeping aligned with new theme */
+    --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 120 100% 50%;
-    --sidebar-primary-foreground: 0 0% 8%;
-    --sidebar-accent: 200 100% 50%;
-    --sidebar-accent-foreground: 0 0% 8%;
-    --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 120 100% 50%;
+    --sidebar-primary: 136 78% 57%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 136 78% 57%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 136 78% 57%;
   }
 }
 
@@ -63,6 +68,13 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
   :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {

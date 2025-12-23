@@ -1,59 +1,93 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CameraChecklistItem } from "./CameraChecklistItem";
 import { Button } from "@/components/ui/button";
+import { useHackfinityStore } from "@/store";
 
 interface CameraSetupProps {
   onSetupComplete: () => void;
 }
 
 export function CameraSetup({ onSetupComplete }: CameraSetupProps) {
-  const [isScanning, setIsScanning] = useState(true);
-  const [allChecked, setAllChecked] = useState(false);
+  const { cameraChecks, resetWorkout } = useHackfinityStore();
+  const [isStarting, setIsStarting] = useState(false);
 
-  const checklistItems = [
-    "Full body visible",
-    "Body Centered",
-    "Correct Distance",
-    "Camera Tilt (Level)",
-  ];
-
+  // Reset workout to CALIBRATING state on mount
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsScanning(false);
-      setAllChecked(true);
-    }, 3000);
-
-    return () => clearTimeout(timer);
+    resetWorkout();
   }, []);
+
+  // Determine if all checks pass
+  // Note: 'isLevel' acts as proxy for "good enough" in our simple logic, but better to check all.
+  const allPassed =
+    cameraChecks.isBodyVisible &&
+    cameraChecks.isCentered;
+  // && cameraChecks.isDistanceCorrect; // Relaxed per user request to allow easier entry
+
+  // Auto-start when all checks pass
+  useEffect(() => {
+    if (allPassed) {
+      setIsStarting(true);
+      // slight delay to avoid instant snapping if user is just passing through
+      const timer = setTimeout(() => {
+        onSetupComplete();
+      }, 1500);
+      return () => clearTimeout(timer);
+    } else {
+      setIsStarting(false);
+    }
+  }, [allPassed, onSetupComplete]);
+  // isLevel is nice to have but maybe optional for "Pass"? Let's include it.
+  // && cameraChecks.isLevel; 
+
+  const checklist = [
+    { label: "Full body visible", passed: cameraChecks.isBodyVisible },
+    { label: "Body Centered", passed: cameraChecks.isCentered },
+    { label: "Correct Distance (Optional)", passed: cameraChecks.isDistanceCorrect },
+    // { label: "Camera Level", passed: cameraChecks.isLevel },
+  ];
 
   return (
     <div className="space-y-6">
-      {isScanning ? (
-        <div className="text-center space-y-4">
-          <div className="flex justify-center">
-            <div className="w-16 h-16 border-4 border-primary rounded-full animate-spin border-t-transparent" />
-          </div>
-          <p className="text-xl text-muted-foreground">Scanning...</p>
-        </div>
-      ) : (
-        <>
-          <div className="space-y-3">
-            {checklistItems.map((item) => (
-              <CameraChecklistItem key={item} label={item} completed={true} />
-            ))}
-          </div>
-
-          {allChecked && (
-            <Button
-              onClick={onSetupComplete}
-              size="lg"
-              className="w-full text-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90"
+      <div className="space-y-4 mb-8">
+        <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest block">Select Exercise</label>
+        <div className="grid grid-cols-3 gap-2">
+          {(['SQUAT', 'PUSHUP', 'JUMPING_JACK'] as const).map((ex) => (
+            <button
+              key={ex}
+              onClick={() => useHackfinityStore.getState().setSelectedExercise(ex)}
+              className={`
+                 py-3 px-2 rounded-xl text-sm font-bold border transition-all
+                 ${useHackfinityStore.getState().selectedExercise === ex
+                  ? 'bg-primary text-primary-foreground border-primary shadow-[0_0_15px_-3px_rgba(23,231,119,0.5)]'
+                  : 'bg-surface-container text-muted-foreground border-transparent hover:bg-white/5'}
+               `}
             >
-              Setup Complete - Start Workout
-            </Button>
-          )}
-        </>
-      )}
+              {ex.replace('_', ' ')}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {checklist.map((item) => (
+          <CameraChecklistItem
+            key={item.label}
+            label={item.label}
+            completed={item.passed}
+          />
+        ))}
+      </div>
+
+      <div className="pt-4">
+        <Button
+          onClick={onSetupComplete}
+          disabled={!allPassed} // Disable until checks pass
+          size="lg"
+          className="w-full text-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isStarting ? "Starting..." : (allPassed ? "Start Workout" : "Adjust Camera to Continue")}
+        </Button>
+      </div>
     </div>
   );
 }

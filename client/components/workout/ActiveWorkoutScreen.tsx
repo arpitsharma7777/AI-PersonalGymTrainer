@@ -2,7 +2,7 @@ import { RepCounter } from "./RepCounter";
 import { RepQualityScore } from "./RepQualityScore";
 import { RealTimeFeedback } from "./RealTimeFeedback";
 import { Button } from "@/components/ui/button";
-import { MockVideoFeed } from "@/components/camera-coach/MockVideoFeed";
+import { CameraFeed } from "@/components/camera-coach/CameraFeed";
 
 interface ActiveWorkoutScreenProps {
   reps: number;
@@ -25,26 +25,7 @@ export function ActiveWorkoutScreen({
     <div className="min-h-screen bg-background p-6 space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          <MockVideoFeed />
-
-          <div className="flex gap-3">
-            <Button
-              onClick={onSimulateGoodPosture}
-              variant="outline"
-              size="sm"
-              className="flex-1 bg-primary/10 border-primary text-primary hover:bg-primary/20"
-            >
-              Simulate Good Form
-            </Button>
-            <Button
-              onClick={onSimulateBadPosture}
-              variant="outline"
-              size="sm"
-              className="flex-1 bg-destructive/10 border-destructive text-destructive hover:bg-destructive/20"
-            >
-              Simulate Bad Form
-            </Button>
-          </div>
+          <CameraFeed />
         </div>
 
         <div className="space-y-6">

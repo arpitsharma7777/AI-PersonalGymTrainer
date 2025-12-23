@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { CameraSetup } from "@/components/camera-coach/CameraSetup";
-import { MockVideoFeed } from "@/components/camera-coach/MockVideoFeed";
+import { CameraFeed } from "@/components/camera-coach/CameraFeed";
 
 export default function CameraCoach() {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export default function CameraCoach() {
           <div className="lg:col-span-2">
             <div className="space-y-4">
               <p className="text-muted-foreground">Position your camera to capture your full body</p>
-              <MockVideoFeed />
+              <CameraFeed />
             </div>
           </div>
 
