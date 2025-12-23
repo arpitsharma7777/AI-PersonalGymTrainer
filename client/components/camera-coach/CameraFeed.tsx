@@ -14,6 +14,7 @@ export function CameraFeed() {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const { landmarker, isLoading } = useMediaPipe();
+    const [isFullScreen, setIsFullScreen] = useState(false);
     const [isVideoReady, setIsVideoReady] = useState(false);
     const requestRef = useRef<number>(0);
 
@@ -35,8 +36,13 @@ export function CameraFeed() {
     useEffect(() => {
         const startCamera = async () => {
             try {
+                // Use more flexible constraints for mobile support
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { width: 1280, height: 720 },
+                    video: {
+                        facingMode: "user",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
                 });
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
@@ -118,10 +124,6 @@ export function CameraFeed() {
                         result = analyzeSquat(landmarks, squatState.current);
                         squatState.current = { stage: result.stage as "UP" | "DOWN", minAngle: result.minAngle };
                     } else if (selectedExercise === 'PUSHUP') {
-                        // Re-use squatState structure or add new ref for pushup if needed unique state
-                        // For simplicity, casting to any, ideally we have separate refs or a unified "exerciseState" ref
-                        // But since we persist simple stage/minAngle, we can share or reset on start.
-                        // Let's assume user reset workout when switching, so state is fresh.
                         result = analyzePushup(landmarks, squatState.current as any);
                         squatState.current = { stage: result.stage as "UP" | "DOWN", minAngle: result.minAngle };
                     } else if (selectedExercise === 'JUMPING_JACK') {
@@ -157,7 +159,15 @@ export function CameraFeed() {
     }, [landmarker, isVideoReady, appState, feedbackMessage]);
 
     return (
-        <div className="relative w-full aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+        <div
+            className={`
+                relative bg-black overflow-hidden shadow-2xl transition-all duration-500
+                ${isFullScreen
+                    ? 'fixed inset-0 z-50 w-screen h-screen rounded-none'
+                    : 'w-full aspect-video rounded-3xl ring-1 ring-white/10'
+                }
+            `}
+        >
             <video
                 ref={videoRef}
                 autoPlay
@@ -179,6 +189,20 @@ export function CameraFeed() {
                 </div>
             )}
 
+            {/* Toggle Fullscreen Button */}
+            <button
+                onClick={() => setIsFullScreen(!isFullScreen)}
+                className="absolute top-4 right-4 z-30 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all border border-white/10"
+                title={isFullScreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            >
+                {isFullScreen ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" /><line x1="14" y1="10" x2="21" y2="3" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
+                ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></svg>
+                )}
+            </button>
+
+
             {/* HUD: Stats Panel (Top Left) */}
             {appState === 'WORKOUT' && (
                 <div className="absolute top-6 left-6 z-10 flex gap-4">
@@ -197,7 +221,7 @@ export function CameraFeed() {
             )}
 
             {/* HUD: Feedback Toast (Bottom Center) - Always Visible */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 w-full max-w-md px-4">
+            <div className={`absolute left-1/2 transform -translate-x-1/2 z-10 w-full max-w-md px-4 transition-all duration-300 ${isFullScreen ? 'bottom-20' : 'bottom-8'}`}>
                 <div className={`
                     bg-black/70 backdrop-blur-lg px-8 py-4 rounded-full border border-white/10 shadow-xl text-center transition-all duration-300
                     ${feedbackMessage ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
