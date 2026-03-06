@@ -9,13 +9,15 @@ export default function ActiveWorkout() {
     repCount,
     qualityScore,
     feedbackMessage,
-    setAppState
+    setAppState,
+    startSession
   } = useHackfinityStore();
 
   useEffect(() => {
     // Ensure we are in WORKOUT mode when this page mounts
     setAppState("WORKOUT");
-  }, [setAppState]);
+    startSession();
+  }, [setAppState, startSession]);
 
   const handleStopWorkout = () => {
     setAppState("SUMMARY"); // Optional, but good for tracking
