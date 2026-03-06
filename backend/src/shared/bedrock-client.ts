@@ -51,7 +51,7 @@ export async function generateInsights(
   errorCounts: Record<string, number>,
   repScores: number[]
 ): Promise<WorkoutInsights> {
-  const modelId = process.env.BEDROCK_MODEL_ID || "anthropic.claude-3-sonnet-20240229-v1:0";
+  const modelId = process.env.BEDROCK_MODEL_ID || "amazon.nova-pro-v1:0";
 
   try {
     const prompt = buildPrompt(exercise, totalReps, averageScore, errorCounts, repScores);
@@ -61,14 +61,15 @@ export async function generateInsights(
       contentType: "application/json",
       accept: "application/json",
       body: JSON.stringify({
-        anthropic_version: "bedrock-2023-05-31",
-        max_tokens: 500,
-        temperature: 0.7,
-        top_p: 0.9,
+        inferenceConfig: {
+          maxTokens: 500,
+          temperature: 0.7,
+          topP: 0.9,
+        },
         messages: [
           {
             role: "user",
-            content: prompt,
+            content: [{ text: prompt }],
           },
         ],
       }),
@@ -76,7 +77,7 @@ export async function generateInsights(
 
     const response = await client.send(command);
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-    const text = responseBody.content?.[0]?.text || "";
+    const text = responseBody.output?.message?.content?.[0]?.text || "";
 
     // Extract JSON from the response (handle potential markdown wrapping)
     const jsonMatch = text.match(/\{[\s\S]*\}/);

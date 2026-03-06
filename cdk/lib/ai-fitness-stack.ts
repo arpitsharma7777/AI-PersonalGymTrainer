@@ -30,7 +30,7 @@ export class AiFitnessStack extends cdk.Stack {
     });
 
     // ── Bedrock Model ARN ─────────────────────────────────────────────
-    const bedrockModelId = "anthropic.claude-3-sonnet-20240229-v1:0";
+    const bedrockModelId = "amazon.nova-pro-v1:0";
     const bedrockModelArn = `arn:aws:bedrock:${this.region}::foundation-model/${bedrockModelId}`;
 
     // ── Lambda: Session Complete ──────────────────────────────────────

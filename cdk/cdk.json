@@ -1,5 +1,5 @@
 {
-  "app": "npx --node-options='--max-old-space-size=4096' ts-node --prefer-ts-exts bin/app.ts",
+  "app": "node --max-old-space-size=8192 node_modules/ts-node/dist/bin.js --prefer-ts-exts bin/app.ts",
   "watch": {
     "include": ["**"],
     "exclude": [
