@@ -5,35 +5,21 @@ interface RealTimeFeedbackProps {
   type?: "good" | "warning" | "info";
 }
 
-export function RealTimeFeedback({
-  message,
-  type = "info",
-}: RealTimeFeedbackProps) {
+export function RealTimeFeedback({ message, type = "info" }: RealTimeFeedbackProps) {
   if (!message) return null;
 
-  const bgClass =
-    type === "good"
-      ? "bg-primary/20 border-primary"
-      : type === "warning"
-        ? "bg-destructive/20 border-destructive"
-        : "bg-secondary/20 border-secondary";
-
-  const textClass =
-    type === "good"
-      ? "text-primary"
-      : type === "warning"
-        ? "text-destructive"
-        : "text-secondary";
-
-  const Icon =
-    type === "good" ? CheckCircle : type === "warning" ? AlertCircle : Info;
+  const accentBg  = type === "good" ? "bg-primary"    : type === "warning" ? "bg-red-400"   : "bg-white/20";
+  const textCls   = type === "good" ? "text-primary"   : type === "warning" ? "text-red-400" : "text-white/55";
+  const Icon      = type === "good" ? CheckCircle      : type === "warning" ? AlertCircle    : Info;
 
   return (
-    <div
-      className={`flex items-center gap-3 p-4 rounded-lg border backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 ${bgClass}`}
-    >
-      <Icon className={`w-5 h-5 ${textClass}`} />
-      <span className={`text-sm font-medium ${textClass}`}>{message}</span>
+    <div className="relative flex items-center gap-4 px-6 py-4 rounded-2xl bg-white/[0.03] border border-white/8 overflow-hidden">
+      {/* Left accent bar */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentBg} transition-colors duration-300`} />
+      <Icon className={`w-5 h-5 ${textCls} shrink-0 ml-2 transition-colors duration-300`} />
+      <span className={`text-sm font-medium ${textCls} transition-colors duration-300`}>
+        {message}
+      </span>
     </div>
   );
 }

@@ -34,6 +34,10 @@ export function CameraFeed() {
     // Local State for Squat Analysis Logic (persistent across frames)
     const squatState = useRef<SquatState>({ stage: "UP", minAngle: 180 });
 
+    // ── Audio feedback refs ──────────────────────────────────────────
+    const lastSpokenRef      = useRef<string>("");
+    const speechCooldownRef  = useRef<number>(0);
+
     useEffect(() => {
         const startCamera = async () => {
             try {
@@ -59,8 +63,31 @@ export function CameraFeed() {
                 const stream = videoRef.current.srcObject as MediaStream;
                 stream.getTracks().forEach((track) => track.stop());
             }
+            // Cancel any pending speech when camera stops
+            if ("speechSynthesis" in window) window.speechSynthesis.cancel();
         };
     }, []);
+
+    // ── Audio feedback (workout only) ────────────────────────────────
+    useEffect(() => {
+        if (appState !== "WORKOUT" || !feedbackMessage) return;
+        if (feedbackMessage === lastSpokenRef.current) return;
+
+        const now = Date.now();
+        if (now - speechCooldownRef.current < 2500) return; // 2.5s cooldown
+
+        lastSpokenRef.current     = feedbackMessage;
+        speechCooldownRef.current = now;
+
+        if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+            const utterance   = new SpeechSynthesisUtterance(feedbackMessage);
+            utterance.rate    = 1.1;
+            utterance.pitch   = 1;
+            utterance.volume  = 1;
+            window.speechSynthesis.speak(utterance);
+        }
+    }, [feedbackMessage, appState]);
 
     useEffect(() => {
         if (!landmarker || !isVideoReady || !videoRef.current || !canvasRef.current) return;

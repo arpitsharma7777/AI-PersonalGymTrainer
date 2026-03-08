@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useHackfinityStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { completeSession } from "@/lib/api";
+import { Activity, ArrowRight, CheckCircle, AlertCircle, Zap, Brain } from "lucide-react";
 
 export default function SessionSummary() {
   const navigate = useNavigate();
@@ -32,16 +33,9 @@ export default function SessionSummary() {
       repScores: repHistory.map((r) => r.scoreAdjustment),
       sessionStartTime,
     })
-      .then((res) => {
-        setAiInsights(res.insights);
-      })
-      .catch((err) => {
-        console.error("Failed to get AI insights:", err);
-        setAiInsights(null);
-      })
-      .finally(() => {
-        setLoadingInsights(false);
-      });
+      .then((res) => { setAiInsights(res.insights); })
+      .catch((err) => { console.error("Failed to get AI insights:", err); setAiInsights(null); })
+      .finally(() => { setLoadingInsights(false); });
   }, []);
 
   const handleBackToHome = () => {
@@ -49,144 +43,191 @@ export default function SessionSummary() {
     navigate("/");
   };
 
+  const handleTrainAgain = () => {
+    resetWorkout();
+    navigate("/camera");
+  };
+
+  const grade      = qualityScore >= 90 ? "A" : qualityScore >= 80 ? "B" : qualityScore >= 70 ? "C" : qualityScore >= 60 ? "D" : "F";
+  const scoreColor = qualityScore >= 80 ? "text-primary" : qualityScore >= 60 ? "text-yellow-400" : "text-red-400";
+
   return (
-    <div className="min-h-screen bg-background p-6 lg:p-8 flex items-center justify-center">
-      <div className="max-w-2xl w-full space-y-12">
+    <div className="min-h-screen bg-background text-foreground flex flex-col overflow-x-hidden">
 
-        {/* Header Section */}
-        <div className="space-y-4 text-center">
-          <div className="inline-block px-4 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
-            <span className="text-primary font-bold tracking-widest uppercase text-sm">Workout Finished</span>
-          </div>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-foreground uppercase tracking-tighter leading-none">
-            SESSION <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">COMPLETE</span>
-          </h1>
-          <div className="inline-block mt-4 px-6 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
-            <span className="text-xl md:text-2xl font-heading font-bold text-primary tracking-wider uppercase">
-              {selectedExercise.replace('_', ' ')}
-            </span>
-          </div>
-          <p className="text-xl text-muted-foreground font-light max-w-lg mx-auto">
-            Great work! Here's your performance breakdown.
-          </p>
+      {/* ── Nav ──────────────────────────────────────────────────────── */}
+      <nav className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/5 bg-background/80 backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <Activity className="w-4 h-4 text-primary" />
+          <span className="font-heading font-bold text-white tracking-[0.2em] text-sm">AI GYM</span>
         </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Reps Card */}
-          <div className="bg-surface-container p-8 rounded-3xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43L20.57 12L17 15.57L8.43 7L12 3.43L10.57 2L9.14 3.43L7.71 2L5.57 4.14L4.14 2.71L2.71 4.14L4.14 5.57L2 7.71L3.43 9.14L2 10.57L3.43 12L7 8.43L15.57 17L12 20.57L13.43 22L14.86 20.57L16.29 22L18.43 19.86L19.86 21.29L21.29 19.86L19.86 18.43L22 16.29L20.57 14.86Z" /></svg>
-            </div>
-            <p className="text-sm text-muted-foreground uppercase tracking-widest font-bold mb-2">Total Reps</p>
-            <p className="text-7xl font-heading font-bold text-white">{repCount}</p>
-          </div>
-
-          {/* Quality Card */}
-          <div className="bg-surface-container p-8 rounded-3xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
-            </div>
-            <p className="text-sm text-muted-foreground uppercase tracking-widest font-bold mb-2">Form Quality</p>
-            <p className={`text-7xl font-heading font-bold ${qualityScore >= 80 ? 'text-primary' : 'text-yellow-500'}`}>
-              {qualityScore}<span className="text-4xl align-top">%</span>
-            </p>
-          </div>
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          <span className="text-xs font-bold tracking-[0.15em] text-primary uppercase">Session Complete</span>
         </div>
+        <div className="w-20" />
+      </nav>
 
-        {/* AI Insights Section */}
-        {isLoadingInsights && (
-          <div className="bg-surface-container p-8 rounded-3xl text-center">
-            <div className="animate-pulse space-y-4">
-              <div className="flex items-center justify-center gap-3">
-                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                <p className="text-lg text-muted-foreground">AI Coach is analyzing your workout...</p>
-              </div>
-              <p className="text-sm text-muted-foreground/60">Powered by Amazon Bedrock</p>
+      {/* ── Main ─────────────────────────────────────────────────────── */}
+      <div className="flex-1 px-4 sm:px-6 md:px-12 py-6 sm:py-10">
+        <div className="max-w-3xl mx-auto space-y-8">
+
+          {/* Hero header */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-5">
+              <span className="text-xs font-medium tracking-[0.15em] text-primary uppercase">
+                Workout Finished
+              </span>
             </div>
-          </div>
-        )}
-
-        {aiInsights && (
-          <div className="space-y-6">
-            {/* AI Summary */}
-            <div className="bg-surface-container p-6 rounded-3xl border border-primary/20">
-              <div className="flex items-center gap-2 mb-4">
-                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                <h2 className="text-lg font-heading font-bold text-primary uppercase tracking-wider">AI Coach Analysis</h2>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">{aiInsights.summary}</p>
+            <div className="pl-4 border-l-2 border-primary/60">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-heading font-bold text-white leading-none tracking-tight">
+                SESSION
+              </h1>
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-heading font-bold text-primary leading-none tracking-tight">
+                COMPLETE
+              </h1>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Strengths */}
-              <div className="bg-surface-container p-6 rounded-3xl">
-                <h3 className="text-sm uppercase tracking-widest font-bold text-green-400 mb-4">Strengths</h3>
-                <ul className="space-y-2">
-                  {aiInsights.strengths.map((s, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <span className="text-green-400 mt-0.5 shrink-0">+</span>
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Weaknesses */}
-              <div className="bg-surface-container p-6 rounded-3xl">
-                <h3 className="text-sm uppercase tracking-widest font-bold text-yellow-400 mb-4">Areas to Improve</h3>
-                <ul className="space-y-2">
-                  {aiInsights.weaknesses.map((w, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <span className="text-yellow-400 mt-0.5 shrink-0">!</span>
-                      {w}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Recommendations */}
-            <div className="bg-surface-container p-6 rounded-3xl">
-              <h3 className="text-sm uppercase tracking-widest font-bold text-blue-400 mb-4">Recommendations</h3>
-              <ol className="space-y-3">
-                {aiInsights.recommendations.map((r, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <span className="bg-blue-400/20 text-blue-400 rounded-full w-6 h-6 flex items-center justify-center shrink-0 text-xs font-bold">
-                      {i + 1}
-                    </span>
-                    {r}
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            {/* Progress Note */}
-            {aiInsights.progressNote && (
-              <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-3xl border border-primary/10">
-                <p className="text-muted-foreground italic text-center">"{aiInsights.progressNote}"</p>
-              </div>
-            )}
-
-            {/* Powered by badge */}
-            <div className="text-center">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-muted-foreground/60">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
-                Powered by Amazon Bedrock (Claude AI)
+            <div className="mt-5">
+              <span className="inline-flex items-center px-4 py-1.5 rounded-full border border-white/15 bg-white/5 text-sm font-heading font-bold text-white/80 tracking-wider uppercase">
+                {selectedExercise.replace("_", " ")}
               </span>
             </div>
           </div>
-        )}
 
-        {/* Action Button */}
-        <div className="pt-4 px-4 sm:px-12">
-          <Button
-            onClick={handleBackToHome}
-            size="lg"
-            className="w-full h-16 text-xl font-bold rounded-full bg-white text-black hover:bg-gray-200 transition-all shadow-[0_0_30px_-5px_rgba(255,255,255,0.3)] hover:shadow-[0_0_50px_-5px_rgba(255,255,255,0.5)]"
-          >
-            START NEW SESSION
-          </Button>
+          {/* ── Stats strip ──────────────────────────────────────────── */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-3 sm:p-5 text-center">
+              <p className="text-[8px] sm:text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase mb-1 sm:mb-3">Total Reps</p>
+              <p className="text-3xl sm:text-5xl font-heading font-bold text-white leading-none">{repCount}</p>
+            </div>
+            <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-3 sm:p-5 text-center">
+              <p className="text-[8px] sm:text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase mb-1 sm:mb-3">Form Score</p>
+              <p className={`text-3xl sm:text-5xl font-heading font-bold leading-none ${scoreColor}`}>
+                {qualityScore}<span className="text-sm sm:text-2xl align-top">%</span>
+              </p>
+            </div>
+            <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-3 sm:p-5 text-center">
+              <p className="text-[8px] sm:text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase mb-1 sm:mb-3">Grade</p>
+              <p className={`text-3xl sm:text-5xl font-heading font-bold leading-none ${scoreColor}`}>{grade}</p>
+            </div>
+          </div>
+
+          {/* ── AI loading ───────────────────────────────────────────── */}
+          {isLoadingInsights && (
+            <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-8 text-center">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div className="w-5 h-5 border-2 border-primary/50 border-t-primary rounded-full animate-spin" />
+                <p className="text-sm text-white/50">AI Coach is analyzing your session...</p>
+              </div>
+              <p className="text-[11px] text-white/20 tracking-widest uppercase">
+                Powered by Amazon Bedrock
+              </p>
+            </div>
+          )}
+
+          {/* ── AI Insights ──────────────────────────────────────────── */}
+          {aiInsights && (
+            <div className="space-y-4">
+
+              {/* Coach summary */}
+              <div className="relative flex gap-4 px-6 py-5 rounded-2xl bg-white/[0.03] border border-white/8 overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-2xl" />
+                <Brain className="w-5 h-5 text-primary shrink-0 mt-0.5 ml-2" />
+                <div>
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-primary uppercase mb-2">
+                    AI Coach Analysis
+                  </p>
+                  <p className="text-sm text-white/55 leading-relaxed">{aiInsights.summary}</p>
+                </div>
+              </div>
+
+              {/* Strengths + Weaknesses */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CheckCircle className="w-4 h-4 text-primary" />
+                    <p className="text-[10px] font-bold tracking-[0.2em] text-primary uppercase">Strengths</p>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {aiInsights.strengths.map((s, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm text-white/50">
+                        <span className="text-primary font-bold shrink-0 mt-0.5">+</span>
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <AlertCircle className="w-4 h-4 text-yellow-400" />
+                    <p className="text-[10px] font-bold tracking-[0.2em] text-yellow-400 uppercase">
+                      Areas to Improve
+                    </p>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {aiInsights.weaknesses.map((w, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm text-white/50">
+                        <span className="text-yellow-400 font-bold shrink-0 mt-0.5">!</span>
+                        {w}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Zap className="w-4 h-4 text-white/40" />
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">
+                    Recommendations
+                  </p>
+                </div>
+                <ol className="space-y-3">
+                  {aiInsights.recommendations.map((r, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-white/50">
+                      <span className="w-5 h-5 rounded-full border border-white/15 bg-white/5 flex items-center justify-center shrink-0 text-[10px] font-bold text-white/50 mt-0.5">
+                        {i + 1}
+                      </span>
+                      {r}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              {/* Progress note */}
+              {aiInsights.progressNote && (
+                <div className="bg-primary/5 border border-primary/15 rounded-2xl px-6 py-5 text-center">
+                  <p className="text-sm text-white/50 italic">"{aiInsights.progressNote}"</p>
+                </div>
+              )}
+
+              {/* Powered by */}
+              <div className="flex justify-center pt-1">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/8 text-[11px] text-white/25 tracking-widest uppercase">
+                  Powered by Amazon Bedrock
+                </span>
+              </div>
+
+            </div>
+          )}
+
+          {/* ── CTAs ─────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+            <Button
+              onClick={handleTrainAgain}
+              className="h-12 font-heading font-bold tracking-widest text-sm rounded-full bg-primary text-black hover:bg-primary/90 shadow-[0_0_30px_-6px_rgba(23,231,119,0.45)] border-0 transition-all duration-200"
+            >
+              TRAIN AGAIN <ArrowRight className="ml-2 w-4 h-4" />
+            </Button>
+            <Button
+              onClick={handleBackToHome}
+              className="h-12 font-heading font-bold tracking-widest text-sm rounded-full bg-transparent border border-white/15 text-white/55 hover:text-white hover:border-white/30 transition-all duration-200"
+            >
+              BACK TO HOME
+            </Button>
+          </div>
+
         </div>
       </div>
     </div>
